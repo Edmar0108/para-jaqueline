@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para ti, Jaqueline 💕</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Pantalla de inicio -->
+    <div id="intro-screen" class="screen active">
+        <div class="floating-hearts-bg" id="hearts-bg"></div>
+        <div class="intro-content">
+            <div class="envelope" id="envelope">
+                <div class="envelope-top"></div>
+                <div class="envelope-body">
+                    <div class="letter-peek">💌</div>
+                </div>
+            </div>
+            <h1 class="intro-title">Tienes un mensaje especial</h1>
+            <p class="intro-subtitle">Corazón de melón 🍈💕</p>
+            <button id="btn-open" class="btn-magic" onclick="startExperience()">
+                <span>Abrir carta</span>
+                <span class="btn-icon">💖</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Pantalla del mensaje principal -->
+    <div id="message-screen" class="screen">
+        <div class="stars-bg" id="stars-bg"></div>
+        <div class="floating-hearts-bg" id="hearts-bg-2"></div>
+        <div class="message-container">
+            <h2 class="para-text">Para ti, <span class="highlight-name">Jaqueline Lara</span></h2>
+            <div class="typewriter-container">
+                <p id="typewriter-text" class="typewriter-text"></p>
+                <span id="cursor" class="cursor">|</span>
+            </div>
+            <div id="signature" class="signature hidden">
+                <p>Con todo mi cariño,</p>
+                <p class="firma">— Eddie M. 💕</p>
+            </div>
+            <button id="btn-surprise" class="btn-magic hidden" onclick="showSurprise()">
+                <span>¿Quieres ver una sorpresa?</span>
+                <span class="btn-icon">✨</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Pantalla de sorpresa final -->
+    <div id="surprise-screen" class="screen">
+        <canvas id="confetti-canvas"></canvas>
+        <div class="surprise-content">
+            <div class="big-heart-container">
+                <div class="big-heart">💖</div>
+            </div>
+            <h1 class="surprise-title">¡Te quiero, Corazón de melón!</h1>
+            <p class="surprise-text">Cada día a tu lado es un regalo 🎁</p>
+            <div class="song-card">
+                <div class="song-icon">🎵</div>
+                <div class="song-info">
+                    <p class="song-label">Nuestra canción</p>
+                    <p class="song-name">Catorce — Sebastián Romero</p>
+                </div>
+                <a href="https://www.youtube.com/results?search_query=Catorce+Sebastian+Romero" target="_blank" class="btn-play">
+                    ▶ Escuchar
+                </a>
+            </div>
+            <div class="final-message">
+                <p>Besos y abrazos de oso 🐻💕</p>
+            </div>
+            <button class="btn-magic btn-replay" onclick="replayAll()">
+                <span>Ver de nuevo</span>
+                <span class="btn-icon">🔄</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
