@@ -14,8 +14,11 @@ const CONFIG = {
     initialCount: 60,
     maxCount: 250,
     spawnPerTouch: 5,
-    baseRadius: 2,
-    glowRadius: 18,
+    baseRadius: 1.8,
+    glowRadius: 8,
+    // Cuando forman texto: más pequeñas y menos glow
+    formingRadius: 1.2,
+    formingGlow: 3,
     speed: 0.4,
     driftStrength: 0.008,
     colors: [
@@ -33,9 +36,9 @@ const CONFIG = {
         "Jaqueline",
         "🥺💕"
     ],
-    formationDuration: 4000,   // ms que mantiene cada texto
-    formationPause: 2000,      // ms entre textos
-    formationSpeed: 0.03,      // qué tan rápido van a su posición
+    formationDuration: 5000,   // ms que mantiene cada texto
+    formationPause: 2500,      // ms entre textos
+    formationSpeed: 0.045,     // qué tan rápido van a su posición
 
     // Mensaje
     message: "Sé que te fallé y no hay excusa que valga. No soy perfecto, pero lo que siento por ti es real. Me duele haberte lastimado porque eres lo más importante que tengo. Quiero ser mejor por ti, quiero demostrarte que puedo cambiar. Perdóname, Corazón de melón. Dame la oportunidad de hacerte sonreír de nuevo. Te quiero con todo lo que soy 🐻💕",
@@ -190,8 +193,8 @@ function updateFirefly(f, time) {
         f.x += dx * CONFIG.formationSpeed;
         f.y += dy * CONFIG.formationSpeed;
         // Pequeño temblor en posición
-        f.x += (Math.random() - 0.5) * 0.5;
-        f.y += (Math.random() - 0.5) * 0.5;
+        f.x += (Math.random() - 0.5) * 0.3;
+        f.y += (Math.random() - 0.5) * 0.3;
     } else {
         // Movimiento libre con drift orgánico
         f.driftAngle += f.driftSpeed;
@@ -233,23 +236,27 @@ function drawFirefly(f) {
 
     const { r, g, b } = f.color;
 
+    // Cuando forma texto: glow más pequeño y compacto para legibilidad
+    const glowR = f.forming ? CONFIG.formingGlow : CONFIG.glowRadius;
+    const drawRadius = f.forming ? CONFIG.formingRadius : f.radius;
+
     // Glow exterior
     const gradient = state.ctx.createRadialGradient(
         f.x, f.y, 0,
-        f.x, f.y, CONFIG.glowRadius * f.radius
+        f.x, f.y, glowR * drawRadius
     );
-    gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${f.currentAlpha * 0.6})`);
-    gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${f.currentAlpha * 0.2})`);
+    gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${f.currentAlpha * 0.5})`);
+    gradient.addColorStop(0.4, `rgba(${r}, ${g}, ${b}, ${f.currentAlpha * 0.12})`);
     gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
 
     state.ctx.beginPath();
-    state.ctx.arc(f.x, f.y, CONFIG.glowRadius * f.radius, 0, Math.PI * 2);
+    state.ctx.arc(f.x, f.y, glowR * drawRadius, 0, Math.PI * 2);
     state.ctx.fillStyle = gradient;
     state.ctx.fill();
 
     // Centro brillante
     state.ctx.beginPath();
-    state.ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+    state.ctx.arc(f.x, f.y, drawRadius, 0, Math.PI * 2);
     state.ctx.fillStyle = `rgba(${Math.min(r + 60, 255)}, ${Math.min(g + 40, 255)}, ${Math.min(b + 30, 255)}, ${f.currentAlpha})`;
     state.ctx.fill();
 }
@@ -264,21 +271,22 @@ function getTextPoints(text) {
     const tempCtx = tempCanvas.getContext('2d');
 
     const isMobile = state.width < 600;
-    const fontSize = isMobile ? 45 : 70;
+    const fontSize = isMobile ? 36 : 60;
 
     tempCanvas.width = state.width;
     tempCanvas.height = state.height;
 
     tempCtx.fillStyle = '#fff';
-    tempCtx.font = `bold ${fontSize}px 'Dancing Script', cursive`;
+    // Sans-serif bold para mejor legibilidad con partículas
+    tempCtx.font = `bold ${fontSize}px Arial, sans-serif`;
     tempCtx.textAlign = 'center';
     tempCtx.textBaseline = 'middle';
-    tempCtx.fillText(text, state.width / 2, state.height * 0.4);
+    tempCtx.fillText(text, state.width / 2, state.height * 0.38);
 
-    // Muestrear píxeles
+    // Muestrear píxeles con mayor separación para que se lean las letras
     const imageData = tempCtx.getImageData(0, 0, state.width, state.height);
     const points = [];
-    const gap = isMobile ? 5 : 4; // densidad de muestreo
+    const gap = isMobile ? 8 : 7; // más separación = letras más definidas
 
     for (let y = 0; y < state.height; y += gap) {
         for (let x = 0; x < state.width; x += gap) {
