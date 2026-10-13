@@ -29,16 +29,16 @@ const CONFIG = {
 
     // Formación de texto
     formationTexts: [
-        "Te quiero",
+        "Perdóname",
         "Jaqueline",
-        "💕"
+        "🥺💕"
     ],
     formationDuration: 4000,   // ms que mantiene cada texto
     formationPause: 2000,      // ms entre textos
     formationSpeed: 0.03,      // qué tan rápido van a su posición
 
     // Mensaje
-    message: "Eres la persona más especial que tengo, sé que no soy perfecto pero trato de darte mi mejor versión, te quiero para mí, pero también quiero verte feliz, gracias por todo. Besos y abrazos de oso 🐻💕",
+    message: "Sé que te fallé y no hay excusa que valga. No soy perfecto, pero lo que siento por ti es real. Me duele haberte lastimado porque eres lo más importante que tengo. Quiero ser mejor por ti, quiero demostrarte que puedo cambiar. Perdóname, Corazón de melón. Dame la oportunidad de hacerte sonreír de nuevo. Te quiero con todo lo que soy 🐻💕",
     typeSpeed: 50,
 
     // Estrellas de fondo
