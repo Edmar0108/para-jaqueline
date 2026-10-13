@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Para ti, Jaqueline 🪲✨</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Canvas principal de luciérnagas -->
+    <canvas id="fireflies-canvas"></canvas>
+
+    <!-- Capa de paisaje nocturno -->
+    <div class="landscape">
+        <div class="moon"></div>
+        <div class="moon-glow"></div>
+        <div class="hills">
+            <div class="hill hill-back"></div>
+            <div class="hill hill-mid"></div>
+            <div class="hill hill-front"></div>
+        </div>
+        <div class="grass-container">
+            <div class="grass-row grass-row-1"></div>
+            <div class="grass-row grass-row-2"></div>
+            <div class="grass-row grass-row-3"></div>
+        </div>
+    </div>
+
+    <!-- Pantalla de inicio -->
+    <div id="intro-overlay" class="overlay active">
+        <div class="intro-content">
+            <div class="firefly-icon">🪲✨</div>
+            <h1>Una noche especial</h1>
+            <p>para ti, Corazón de melón</p>
+            <button id="btn-start" class="btn-glow">
+                <span>Toca para comenzar</span>
+            </button>
+            <p class="hint">💡 Toca la pantalla para crear luciérnagas</p>
+        </div>
+    </div>
+
+    <!-- Mensaje central que aparece después -->
+    <div id="message-overlay" class="overlay">
+        <div class="message-box">
+            <p class="msg-para">Para ti,</p>
+            <h2 class="msg-name">Jaqueline Lara</h2>
+            <div class="msg-divider">✦</div>
+            <p class="msg-body" id="msg-body"></p>
+            <div class="msg-signature">
+                <p>Con todo mi cariño,</p>
+                <p class="msg-firma">— Eddie M. 💕</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Texto que forman las luciérnagas -->
+    <div id="formation-text" class="formation-text"></div>
+
+    <!-- Instrucción sutil -->
+    <div id="touch-hint" class="touch-hint hidden">
+        <span>✨ toca la pantalla ✨</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

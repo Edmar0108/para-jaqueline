@@ -1,0 +1,506 @@
+/* ============================================
+   LUCIÉRNAGAS — JARDÍN NOCTURNO
+   Para Jaqueline Lara 🪲✨
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden;
+    background: #05060f;
+    font-family: 'Quicksand', sans-serif;
+    color: #fff;
+    width: 100vw;
+    height: 100vh;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+
+/* ============================================
+   CANVAS DE LUCIÉRNAGAS
+   ============================================ */
+
+#fireflies-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* ============================================
+   PAISAJE NOCTURNO
+   ============================================ */
+
+.landscape {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background: linear-gradient(
+        180deg,
+        #05060f 0%,
+        #0a0e1a 15%,
+        #0d1326 30%,
+        #111d3a 50%,
+        #132040 65%,
+        #1a2a4a 80%,
+        #1e3350 100%
+    );
+}
+
+/* Luna */
+.moon {
+    position: absolute;
+    top: 8%;
+    right: 15%;
+    width: 70px;
+    height: 70px;
+    background: radial-gradient(circle, #ffeedd 0%, #ffddbb 40%, #ffcc99 100%);
+    border-radius: 50%;
+    box-shadow:
+        0 0 20px rgba(255, 238, 204, 0.4),
+        0 0 60px rgba(255, 221, 170, 0.2),
+        0 0 100px rgba(255, 204, 153, 0.1);
+    z-index: 2;
+}
+
+.moon-glow {
+    position: absolute;
+    top: 5%;
+    right: 12.5%;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(255, 238, 204, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 1;
+}
+
+/* Colinas */
+.hills {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 45%;
+    z-index: 2;
+}
+
+.hill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    border-radius: 50% 50% 0 0;
+}
+
+.hill-back {
+    height: 100%;
+    background: linear-gradient(180deg, #0a1628 0%, #0d1a2f 100%);
+    transform: scaleX(1.3);
+    bottom: -10%;
+}
+
+.hill-mid {
+    height: 75%;
+    background: linear-gradient(180deg, #0c1e30 0%, #0f2338 100%);
+    transform: scaleX(1.5) translateX(-5%);
+    bottom: -8%;
+}
+
+.hill-front {
+    height: 55%;
+    background: linear-gradient(180deg, #0e2535 0%, #122d40 100%);
+    transform: scaleX(1.4) translateX(3%);
+    bottom: -5%;
+}
+
+/* Pasto */
+.grass-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 12%;
+    z-index: 3;
+    overflow: hidden;
+}
+
+.grass-row {
+    position: absolute;
+    bottom: 0;
+    left: -5%;
+    width: 110%;
+    background-repeat: repeat-x;
+    background-size: 30px 100%;
+}
+
+.grass-row-1 {
+    height: 100%;
+    background-image:
+        linear-gradient(135deg, transparent 42%, #0d2a1a 42%, #0d2a1a 44%, transparent 44%),
+        linear-gradient(45deg, transparent 42%, #0a2416 42%, #0a2416 44%, transparent 44%);
+    background-size: 15px 100%;
+    opacity: 0.5;
+}
+
+.grass-row-2 {
+    height: 75%;
+    background-image:
+        linear-gradient(140deg, transparent 40%, #103320 40%, #103320 43%, transparent 43%),
+        linear-gradient(40deg, transparent 40%, #0c2c1c 40%, #0c2c1c 43%, transparent 43%);
+    background-size: 12px 100%;
+    opacity: 0.7;
+}
+
+.grass-row-3 {
+    height: 50%;
+    background-image:
+        linear-gradient(130deg, transparent 38%, #144028 38%, #144028 42%, transparent 42%),
+        linear-gradient(50deg, transparent 38%, #103522 38%, #103522 42%, transparent 42%);
+    background-size: 10px 100%;
+    opacity: 0.9;
+}
+
+/* ============================================
+   OVERLAYS
+   ============================================ */
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1.5s ease, visibility 1.5s ease;
+    pointer-events: none;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* ============================================
+   PANTALLA DE INICIO
+   ============================================ */
+
+.intro-content {
+    text-align: center;
+    padding: 30px;
+}
+
+.firefly-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    animation: floatSoft 3s ease-in-out infinite;
+}
+
+@keyframes floatSoft {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+.intro-content h1 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.5rem;
+    color: #c8e6c9;
+    text-shadow: 0 0 30px rgba(200, 230, 201, 0.3);
+    margin-bottom: 8px;
+}
+
+.intro-content p {
+    font-size: 1.1rem;
+    color: #a0c4a8;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.btn-glow {
+    background: transparent;
+    border: 1px solid rgba(180, 230, 150, 0.4);
+    color: #c8e6c9;
+    padding: 16px 40px;
+    font-size: 1.1rem;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    box-shadow:
+        0 0 15px rgba(180, 230, 150, 0.15),
+        inset 0 0 15px rgba(180, 230, 150, 0.05);
+    animation: fadeInUp 1s ease 0.5s both;
+}
+
+.btn-glow:hover,
+.btn-glow:active {
+    background: rgba(180, 230, 150, 0.1);
+    border-color: rgba(180, 230, 150, 0.6);
+    box-shadow:
+        0 0 30px rgba(180, 230, 150, 0.25),
+        inset 0 0 20px rgba(180, 230, 150, 0.1);
+    transform: scale(1.05);
+}
+
+.btn-glow::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 40%,
+        rgba(180, 230, 150, 0.08) 50%,
+        transparent 60%
+    );
+    animation: shimmer 4s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.hint {
+    font-size: 0.85rem !important;
+    color: rgba(180, 230, 150, 0.5) !important;
+    margin-top: 15px !important;
+}
+
+/* ============================================
+   MENSAJE OVERLAY
+   ============================================ */
+
+#message-overlay {
+    background: radial-gradient(ellipse at center, rgba(5, 6, 15, 0.85) 0%, rgba(5, 6, 15, 0.7) 100%);
+}
+
+.message-box {
+    text-align: center;
+    max-width: 550px;
+    width: 90%;
+    padding: 40px 30px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(180, 230, 150, 0.12);
+    border-radius: 24px;
+    box-shadow: 0 0 60px rgba(180, 230, 150, 0.06);
+    animation: fadeInScale 1s ease both;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.msg-para {
+    font-size: 1.1rem;
+    color: #a0c4a8;
+    margin-bottom: 5px;
+    animation: fadeInUp 0.8s ease 0.3s both;
+}
+
+.msg-name {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.4rem;
+    color: #c8e6c9;
+    text-shadow: 0 0 25px rgba(200, 230, 201, 0.3);
+    margin-bottom: 15px;
+    animation: fadeInUp 0.8s ease 0.5s both;
+}
+
+.msg-divider {
+    color: rgba(180, 230, 150, 0.4);
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    animation: fadeInUp 0.8s ease 0.7s both;
+}
+
+.msg-body {
+    font-size: 1.1rem;
+    line-height: 1.9;
+    color: #d4e8d6;
+    font-weight: 300;
+    margin-bottom: 25px;
+    min-height: 100px;
+}
+
+.msg-signature {
+    opacity: 0;
+    transform: translateY(15px);
+    transition: all 1s ease;
+}
+
+.msg-signature.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.msg-signature p {
+    font-family: 'Dancing Script', cursive;
+    color: #a0c4a8;
+    font-size: 1.2rem;
+}
+
+.msg-firma {
+    font-size: 1.5rem !important;
+    color: #c8e6c9 !important;
+    margin-top: 5px;
+    text-shadow: 0 0 15px rgba(200, 230, 201, 0.3);
+}
+
+/* ============================================
+   TEXTO DE FORMACIÓN DE LUCIÉRNAGAS
+   ============================================ */
+
+.formation-text {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Dancing Script', cursive;
+    font-size: 3.5rem;
+    color: transparent;
+    z-index: 15;
+    pointer-events: none;
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* ============================================
+   TOUCH HINT
+   ============================================ */
+
+.touch-hint {
+    position: fixed;
+    bottom: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-size: 0.9rem;
+    color: rgba(180, 230, 150, 0.4);
+    transition: opacity 1s ease;
+    animation: pulseSoft 3s ease-in-out infinite;
+}
+
+.touch-hint.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.touch-hint.visible {
+    opacity: 1;
+}
+
+@keyframes pulseSoft {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+/* ============================================
+   ANIMACIONES GENERALES
+   ============================================ */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 600px) {
+    .intro-content h1 {
+        font-size: 2rem;
+    }
+
+    .btn-glow {
+        padding: 14px 32px;
+        font-size: 1rem;
+    }
+
+    .msg-name {
+        font-size: 1.8rem;
+    }
+
+    .msg-body {
+        font-size: 1rem;
+        line-height: 1.8;
+    }
+
+    .message-box {
+        padding: 30px 22px;
+    }
+
+    .formation-text {
+        font-size: 2.5rem;
+    }
+
+    .moon {
+        width: 50px;
+        height: 50px;
+        top: 5%;
+        right: 10%;
+    }
+
+    .moon-glow {
+        width: 90px;
+        height: 90px;
+        top: 2.5%;
+        right: 7%;
+    }
+}
+
+@media (max-width: 380px) {
+    .intro-content h1 {
+        font-size: 1.7rem;
+    }
+
+    .formation-text {
+        font-size: 2rem;
+    }
+
+    .msg-name {
+        font-size: 1.5rem;
+    }
+}
