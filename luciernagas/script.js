@@ -1,421 +1,365 @@
 /* ============================================
    CIELO DE ESTRELLAS — Para Jaqueline Lara
-   Estrellas que forman texto + estrella fugaz
-   + mensaje de disculpa
+   Versión robusta para celular
    ============================================ */
 
-// ============================================
-// CONFIGURACIÓN
-// ============================================
+(function() {
+    'use strict';
 
-const CONFIG = {
-    starCount: 300,
-    
-    // Formación de texto
-    formationTexts: ["Perdóname", "Jaqueline", "♥"],
-    formationHold: 5000,
-    formationGap: 2500,
-    formationEase: 0.04,
+    // ============================================
+    // CONFIGURACIÓN
+    // ============================================
 
-    // Estrella fugaz
-    shootingStarInterval: 4000,
+    var starCount = 300;
+    var formationTexts = ["Perdoname", "Jaqueline"];
+    var formationHold = 5000;
+    var formationGap = 2500;
+    var formationEase = 0.045;
+    var shootingInterval = 4500;
+    var message = "Se que te falle y no hay excusa que valga. No soy perfecto, pero lo que siento por ti es real. Me duele haberte lastimado porque eres lo mas importante que tengo. Quiero ser mejor por ti, quiero demostrarte que puedo cambiar. Perdoname, Corazon de melon. Dame la oportunidad de hacerte sonreir de nuevo. Te quiero con todo lo que soy.";
+    var typeSpeed = 45;
 
-    // Mensaje
-    message: "Sé que te fallé y no hay excusa que valga. No soy perfecto, pero lo que siento por ti es real. Me duele haberte lastimado porque eres lo más importante que tengo. Quiero ser mejor por ti, quiero demostrarte que puedo cambiar. Perdóname, Corazón de melón. Dame la oportunidad de hacerte sonreír de nuevo. Te quiero con todo lo que soy 🐻💕",
-    typeSpeed: 45
-};
+    // ============================================
+    // ESTADO
+    // ============================================
 
-// ============================================
-// ESTADO
-// ============================================
+    var canvas, ctx, W, H;
+    var stars = [];
+    var shootingStars = [];
+    var phase = 'intro';
 
-const S = {
-    canvas: null,
-    ctx: null,
-    W: 0,
-    H: 0,
-    stars: [],
-    shootingStars: [],
-    phase: 'intro',
-    raf: null
-};
+    // ============================================
+    // INIT
+    // ============================================
 
-// ============================================
-// INICIALIZACIÓN
-// ============================================
+    function init() {
+        canvas = document.getElementById('stars-canvas');
+        if (!canvas) return;
+        ctx = canvas.getContext('2d');
+        doResize();
+        window.addEventListener('resize', function() {
+            doResize();
+            buildStars();
+        });
+        buildStars();
+        requestAnimationFrame(tick);
 
-function init() {
-    S.canvas = document.getElementById('stars-canvas');
-    S.ctx = S.canvas.getContext('2d');
-    resize();
-    window.addEventListener('resize', () => { resize(); createStars(); });
-    createStars();
-    loop();
-    document.getElementById('btn-start').addEventListener('click', startExperience);
-}
-
-function resize() {
-    S.W = window.innerWidth;
-    S.H = window.innerHeight;
-    S.canvas.width = S.W;
-    S.canvas.height = S.H;
-}
-
-// ============================================
-// ESTRELLAS
-// ============================================
-
-function createStars() {
-    S.stars = [];
-    for (let i = 0; i < CONFIG.starCount; i++) {
-        S.stars.push(makeStar(
-            Math.random() * S.W,
-            Math.random() * S.H
-        ));
-    }
-}
-
-function makeStar(x, y) {
-    return {
-        // posición actual
-        x, y,
-        // posición "hogar" (donde flota libre)
-        homeX: x,
-        homeY: y,
-        // posición objetivo (formación o hogar)
-        tx: x,
-        ty: y,
-        // visual
-        radius: Math.random() * 1.5 + 0.5,
-        baseAlpha: Math.random() * 0.5 + 0.3,
-        alpha: 0,
-        // twinkle
-        twinkleSpeed: Math.random() * 0.03 + 0.008,
-        twinklePhase: Math.random() * Math.PI * 2,
-        // color temp (cálido a frío)
-        temp: Math.random(),
-        // estado
-        forming: false,
-        // drift libre
-        driftAngle: Math.random() * Math.PI * 2,
-        driftSpeed: Math.random() * 0.002 + 0.001
-    };
-}
-
-function updateStar(star, time) {
-    // Twinkle
-    const twinkle = Math.sin(time * star.twinkleSpeed + star.twinklePhase);
-    star.alpha = star.baseAlpha * (0.6 + twinkle * 0.4);
-
-    if (star.forming) {
-        // Mover suavemente hacia el objetivo
-        star.x += (star.tx - star.x) * CONFIG.formationEase;
-        star.y += (star.ty - star.y) * CONFIG.formationEase;
-    } else {
-        // Mover suavemente de regreso a casa
-        star.x += (star.tx - star.x) * 0.02;
-        star.y += (star.ty - star.y) * 0.02;
-        // Drift orgánico sutil
-        star.driftAngle += star.driftSpeed;
-        star.homeX += Math.cos(star.driftAngle) * 0.1;
-        star.homeY += Math.sin(star.driftAngle) * 0.08;
-        // Mantener en pantalla
-        if (star.homeX < 0) star.homeX = S.W;
-        if (star.homeX > S.W) star.homeX = 0;
-        if (star.homeY < 0) star.homeY = S.H;
-        if (star.homeY > S.H) star.homeY = 0;
-        star.tx = star.homeX;
-        star.ty = star.homeY;
-    }
-}
-
-function drawStar(star) {
-    if (star.alpha < 0.02) return;
-    const ctx = S.ctx;
-
-    // Color basado en "temperatura" estelar
-    let r, g, b;
-    if (star.temp < 0.3) {
-        // Azulada fría
-        r = 180; g = 200; b = 255;
-    } else if (star.temp < 0.7) {
-        // Blanca
-        r = 255; g = 255; b = 245;
-    } else {
-        // Dorada cálida
-        r = 255; g = 230; b = 180;
-    }
-
-    // Glow muy sutil (solo un halo pequeño)
-    const glowSize = star.forming ? star.radius * 3 : star.radius * 4;
-    const gradient = ctx.createRadialGradient(
-        star.x, star.y, 0,
-        star.x, star.y, glowSize
-    );
-    gradient.addColorStop(0, `rgba(${r},${g},${b},${star.alpha * 0.3})`);
-    gradient.addColorStop(1, `rgba(${r},${g},${b},0)`);
-    ctx.beginPath();
-    ctx.arc(star.x, star.y, glowSize, 0, Math.PI * 2);
-    ctx.fillStyle = gradient;
-    ctx.fill();
-
-    // Punto central nítido
-    ctx.beginPath();
-    ctx.arc(star.x, star.y, star.forming ? star.radius * 0.9 : star.radius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(${r},${g},${b},${star.alpha})`;
-    ctx.fill();
-}
-
-// ============================================
-// ESTRELLAS FUGACES
-// ============================================
-
-function spawnShootingStar() {
-    const startX = Math.random() * S.W * 0.6 + S.W * 0.2;
-    const startY = Math.random() * S.H * 0.3;
-    const angle = Math.PI * 0.2 + Math.random() * 0.3;
-    const speed = 8 + Math.random() * 6;
-    const length = 80 + Math.random() * 60;
-
-    S.shootingStars.push({
-        x: startX,
-        y: startY,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        length,
-        alpha: 1,
-        life: 1,
-        decay: 0.012 + Math.random() * 0.008
-    });
-}
-
-function updateShootingStars() {
-    for (let i = S.shootingStars.length - 1; i >= 0; i--) {
-        const ss = S.shootingStars[i];
-        ss.x += ss.vx;
-        ss.y += ss.vy;
-        ss.life -= ss.decay;
-        ss.alpha = Math.max(0, ss.life);
-
-        if (ss.life <= 0) {
-            S.shootingStars.splice(i, 1);
+        var btn = document.getElementById('btn-start');
+        if (btn) {
+            btn.addEventListener('click', function() {
+                startShow();
+            });
+            btn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                startShow();
+            });
         }
     }
-}
 
-function drawShootingStars() {
-    const ctx = S.ctx;
-    S.shootingStars.forEach(ss => {
-        const tailX = ss.x - (ss.vx / Math.sqrt(ss.vx * ss.vx + ss.vy * ss.vy)) * ss.length * ss.alpha;
-        const tailY = ss.y - (ss.vy / Math.sqrt(ss.vx * ss.vx + ss.vy * ss.vy)) * ss.length * ss.alpha;
+    function doResize() {
+        W = window.innerWidth;
+        H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+    }
 
-        const gradient = ctx.createLinearGradient(ss.x, ss.y, tailX, tailY);
-        gradient.addColorStop(0, `rgba(255, 255, 240, ${ss.alpha})`);
-        gradient.addColorStop(0.3, `rgba(255, 240, 200, ${ss.alpha * 0.6})`);
-        gradient.addColorStop(1, `rgba(255, 230, 180, 0)`);
+    // ============================================
+    // ESTRELLAS
+    // ============================================
 
+    function buildStars() {
+        stars = [];
+        for (var i = 0; i < starCount; i++) {
+            var x = Math.random() * W;
+            var y = Math.random() * H;
+            stars.push({
+                x: x, y: y,
+                homeX: x, homeY: y,
+                tx: x, ty: y,
+                r: Math.random() * 1.4 + 0.4,
+                baseA: Math.random() * 0.5 + 0.3,
+                a: 0,
+                tSpeed: Math.random() * 0.03 + 0.01,
+                tPhase: Math.random() * 6.28,
+                temp: Math.random(),
+                forming: false,
+                da: Math.random() * 6.28,
+                ds: Math.random() * 0.002 + 0.001
+            });
+        }
+    }
+
+    function updateStar(s, t) {
+        var tw = Math.sin(t * s.tSpeed + s.tPhase);
+        s.a = s.baseA * (0.55 + tw * 0.45);
+
+        if (s.forming) {
+            s.x += (s.tx - s.x) * formationEase;
+            s.y += (s.ty - s.y) * formationEase;
+        } else {
+            s.x += (s.tx - s.x) * 0.02;
+            s.y += (s.ty - s.y) * 0.02;
+            s.da += s.ds;
+            s.homeX += Math.cos(s.da) * 0.08;
+            s.homeY += Math.sin(s.da) * 0.06;
+            if (s.homeX < 0) s.homeX = W;
+            if (s.homeX > W) s.homeX = 0;
+            if (s.homeY < 0) s.homeY = H;
+            if (s.homeY > H) s.homeY = 0;
+            s.tx = s.homeX;
+            s.ty = s.homeY;
+        }
+    }
+
+    function drawStar(s) {
+        if (s.a < 0.02) return;
+        var r, g, b;
+        if (s.temp < 0.3) { r=180; g=200; b=255; }
+        else if (s.temp < 0.7) { r=255; g=255; b=245; }
+        else { r=255; g=230; b=180; }
+
+        // Glow pequeño
+        var gl = s.forming ? s.r * 2.5 : s.r * 3.5;
+        var grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, gl);
+        grad.addColorStop(0, 'rgba('+r+','+g+','+b+','+(s.a*0.25)+')');
+        grad.addColorStop(1, 'rgba('+r+','+g+','+b+',0)');
         ctx.beginPath();
-        ctx.moveTo(ss.x, ss.y);
-        ctx.lineTo(tailX, tailY);
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-
-        // Cabeza brillante
-        ctx.beginPath();
-        ctx.arc(ss.x, ss.y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 250, ${ss.alpha})`;
+        ctx.arc(s.x, s.y, gl, 0, 6.28);
+        ctx.fillStyle = grad;
         ctx.fill();
-    });
-}
 
-// ============================================
-// FORMACIÓN DE TEXTO
-// ============================================
+        // Centro
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.forming ? s.r * 0.8 : s.r, 0, 6.28);
+        ctx.fillStyle = 'rgba('+r+','+g+','+b+','+s.a+')';
+        ctx.fill();
+    }
 
-function getTextPoints(text) {
-    const tmp = document.createElement('canvas');
-    const c = tmp.getContext('2d');
-    tmp.width = S.W;
-    tmp.height = S.H;
+    // ============================================
+    // ESTRELLAS FUGACES
+    // ============================================
 
-    const mobile = S.W < 600;
-    const fontSize = mobile ? 40 : 65;
+    function addShootingStar() {
+        var sx = Math.random() * W * 0.6 + W * 0.2;
+        var sy = Math.random() * H * 0.25;
+        var ang = 0.6 + Math.random() * 0.4;
+        var spd = 9 + Math.random() * 5;
+        shootingStars.push({
+            x: sx, y: sy,
+            vx: Math.cos(ang) * spd,
+            vy: Math.sin(ang) * spd,
+            len: 70 + Math.random() * 50,
+            life: 1,
+            dec: 0.013 + Math.random() * 0.007
+        });
+    }
 
-    c.fillStyle = '#fff';
-    c.font = `900 ${fontSize}px Arial, Helvetica, sans-serif`;
-    c.textAlign = 'center';
-    c.textBaseline = 'middle';
-    c.fillText(text, S.W / 2, S.H * 0.4);
+    function tickShootingStars() {
+        for (var i = shootingStars.length - 1; i >= 0; i--) {
+            var ss = shootingStars[i];
+            ss.x += ss.vx;
+            ss.y += ss.vy;
+            ss.life -= ss.dec;
+            if (ss.life <= 0) { shootingStars.splice(i, 1); continue; }
 
-    const img = c.getImageData(0, 0, S.W, S.H);
-    const pts = [];
-    // Separación grande para legibilidad
-    const gap = mobile ? 7 : 6;
+            var mag = Math.sqrt(ss.vx*ss.vx + ss.vy*ss.vy);
+            var tX = ss.x - (ss.vx/mag) * ss.len * ss.life;
+            var tY = ss.y - (ss.vy/mag) * ss.len * ss.life;
 
-    for (let y = 0; y < S.H; y += gap) {
-        for (let x = 0; x < S.W; x += gap) {
-            if (img.data[(y * S.W + x) * 4 + 3] > 128) {
-                pts.push({ x, y });
+            var grad = ctx.createLinearGradient(ss.x, ss.y, tX, tY);
+            grad.addColorStop(0, 'rgba(255,255,240,'+ss.life+')');
+            grad.addColorStop(0.3, 'rgba(255,240,200,'+(ss.life*0.5)+')');
+            grad.addColorStop(1, 'rgba(255,230,180,0)');
+
+            ctx.beginPath();
+            ctx.moveTo(ss.x, ss.y);
+            ctx.lineTo(tX, tY);
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(ss.x, ss.y, 2, 0, 6.28);
+            ctx.fillStyle = 'rgba(255,255,250,'+ss.life+')';
+            ctx.fill();
+        }
+    }
+
+    // ============================================
+    // FORMACIÓN DE TEXTO (canvas sampling)
+    // ============================================
+
+    function sampleText(text) {
+        var tmp = document.createElement('canvas');
+        tmp.width = W;
+        tmp.height = H;
+        var c = tmp.getContext('2d');
+
+        var mobile = W < 600;
+        var fs = mobile ? 38 : 60;
+
+        c.fillStyle = '#fff';
+        c.font = '900 ' + fs + 'px Arial,Helvetica,sans-serif';
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.fillText(text, W / 2, H * 0.38);
+
+        var id = c.getImageData(0, 0, W, H);
+        var pts = [];
+        var gap = mobile ? 8 : 7;
+
+        for (var y = 0; y < H; y += gap) {
+            for (var x = 0; x < W; x += gap) {
+                var idx = (y * W + x) * 4;
+                if (id.data[idx + 3] > 100) {
+                    pts.push({x: x, y: y});
+                }
             }
         }
-    }
-    return pts;
-}
-
-function formText(text) {
-    const pts = getTextPoints(text);
-    if (!pts.length) return;
-
-    // Mezclar aleatoriamente
-    for (let i = pts.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [pts[i], pts[j]] = [pts[j], pts[i]];
+        return pts;
     }
 
-    const count = Math.min(S.stars.length, pts.length);
+    function formText(text) {
+        var pts = sampleText(text);
+        if (pts.length === 0) return;
 
-    // Asignar estrellas a puntos
-    for (let i = 0; i < count; i++) {
-        S.stars[i].tx = pts[i].x;
-        S.stars[i].ty = pts[i].y;
-        S.stars[i].forming = true;
-        // Hacer más brillantes las que forman texto
-        S.stars[i].baseAlpha = 0.8 + Math.random() * 0.2;
-    }
-    // Las demás quedan libres
-    for (let i = count; i < S.stars.length; i++) {
-        S.stars[i].forming = false;
-        S.stars[i].baseAlpha = Math.random() * 0.3 + 0.1;
-    }
-}
+        // Shuffle
+        for (var i = pts.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = pts[i]; pts[i] = pts[j]; pts[j] = tmp;
+        }
 
-function releaseStars() {
-    S.stars.forEach(star => {
-        star.forming = false;
-        star.tx = star.homeX;
-        star.ty = star.homeY;
-        star.baseAlpha = Math.random() * 0.5 + 0.3;
-    });
-}
+        var count = Math.min(stars.length, pts.length);
 
-// ============================================
-// SECUENCIA PRINCIPAL
-// ============================================
-
-async function startExperience() {
-    const intro = document.getElementById('intro-overlay');
-    intro.classList.remove('active');
-    S.phase = 'sky';
-
-    // Estrellas fugaces periódicas
-    const shootingInterval = setInterval(() => {
-        if (S.phase !== 'done') spawnShootingStar();
-    }, CONFIG.shootingStarInterval);
-
-    // Primera estrella fugaz rápida
-    await wait(1500);
-    spawnShootingStar();
-
-    // Disfrutar cielo
-    await wait(3000);
-
-    // Secuencia de formación
-    for (let i = 0; i < CONFIG.formationTexts.length; i++) {
-        formText(CONFIG.formationTexts[i]);
-        await wait(CONFIG.formationHold);
-        releaseStars();
-        if (i < CONFIG.formationTexts.length - 1) {
-            await wait(CONFIG.formationGap);
+        for (var i = 0; i < count; i++) {
+            stars[i].tx = pts[i].x;
+            stars[i].ty = pts[i].y;
+            stars[i].forming = true;
+            stars[i].baseA = 0.85 + Math.random() * 0.15;
+            stars[i].r = 1.2 + Math.random() * 0.5;
+        }
+        for (var i = count; i < stars.length; i++) {
+            stars[i].forming = false;
+            stars[i].baseA = Math.random() * 0.2 + 0.05;
         }
     }
 
-    // Pausa antes del mensaje
-    await wait(2000);
-
-    // Lanzar una ráfaga de estrellas fugaces
-    spawnShootingStar();
-    await wait(300);
-    spawnShootingStar();
-    await wait(200);
-    spawnShootingStar();
-
-    await wait(1000);
-    showMessage();
-
-    // Limpiar intervalo después de un rato
-    setTimeout(() => clearInterval(shootingInterval), 30000);
-}
-
-// ============================================
-// MENSAJE
-// ============================================
-
-function showMessage() {
-    S.phase = 'message';
-    const overlay = document.getElementById('message-overlay');
-    overlay.classList.add('active');
-
-    const el = document.getElementById('msg-body');
-    el.textContent = '';
-    let i = 0;
-
-    function type() {
-        if (i < CONFIG.message.length) {
-            el.textContent += CONFIG.message.charAt(i);
-            i++;
-
-            let delay = CONFIG.typeSpeed;
-            const ch = CONFIG.message.charAt(i - 1);
-            if (ch === ',' || ch === '.') delay *= 5;
-            else if (ch === ' ') delay *= 1.2;
-
-            setTimeout(type, delay);
-        } else {
-            // Mostrar firma
-            setTimeout(() => {
-                document.getElementById('msg-signature').classList.add('visible');
-            }, 600);
+    function releaseAll() {
+        for (var i = 0; i < stars.length; i++) {
+            stars[i].forming = false;
+            stars[i].tx = stars[i].homeX;
+            stars[i].ty = stars[i].homeY;
+            stars[i].baseA = Math.random() * 0.5 + 0.3;
+            stars[i].r = Math.random() * 1.4 + 0.4;
         }
     }
 
-    type();
-}
+    // ============================================
+    // SECUENCIA PRINCIPAL
+    // ============================================
 
-// ============================================
-// LOOP DE ANIMACIÓN
-// ============================================
+    var showStarted = false;
 
-function loop() {
-    const t = performance.now() * 0.001;
-    const ctx = S.ctx;
+    function startShow() {
+        if (showStarted) return;
+        showStarted = true;
 
-    ctx.clearRect(0, 0, S.W, S.H);
+        var intro = document.getElementById('intro-overlay');
+        if (intro) intro.classList.remove('active');
+        phase = 'sky';
 
-    // Estrellas
-    S.stars.forEach(star => {
-        updateStar(star, t);
-        drawStar(star);
-    });
+        // Estrellas fugaces periódicas
+        var ssTimer = setInterval(function() {
+            if (phase !== 'done') addShootingStar();
+        }, shootingInterval);
 
-    // Estrellas fugaces
-    updateShootingStars();
-    drawShootingStars();
+        // Secuencia con timeouts simples (más compatible)
+        setTimeout(function() { addShootingStar(); }, 1500);
 
-    S.raf = requestAnimationFrame(loop);
-}
+        // Espera para disfrutar cielo, luego forma texto
+        setTimeout(function() { runFormations(0, ssTimer); }, 4500);
+    }
 
-// ============================================
-// UTILIDAD
-// ============================================
+    function runFormations(index, ssTimer) {
+        if (index >= formationTexts.length) {
+            // Terminó la formación, ráfaga de fugaces y luego mensaje
+            setTimeout(function() { addShootingStar(); }, 500);
+            setTimeout(function() { addShootingStar(); }, 900);
+            setTimeout(function() { addShootingStar(); }, 1200);
+            setTimeout(function() { showMsg(); }, 2500);
+            setTimeout(function() { clearInterval(ssTimer); }, 30000);
+            return;
+        }
 
-function wait(ms) {
-    return new Promise(r => setTimeout(r, ms));
-}
+        formText(formationTexts[index]);
 
-// ============================================
-// INICIO
-// ============================================
+        setTimeout(function() {
+            releaseAll();
+            setTimeout(function() {
+                runFormations(index + 1, ssTimer);
+            }, formationGap);
+        }, formationHold);
+    }
 
-document.addEventListener('DOMContentLoaded', init);
+    // ============================================
+    // MENSAJE
+    // ============================================
+
+    function showMsg() {
+        phase = 'message';
+        var overlay = document.getElementById('message-overlay');
+        if (overlay) overlay.classList.add('active');
+
+        var el = document.getElementById('msg-body');
+        if (!el) return;
+        el.textContent = '';
+
+        var i = 0;
+        function typ() {
+            if (i < message.length) {
+                el.textContent += message.charAt(i);
+                i++;
+                var d = typeSpeed;
+                var ch = message.charAt(i - 1);
+                if (ch === ',' || ch === '.') d = typeSpeed * 4;
+                else if (ch === ' ') d = typeSpeed * 1.1;
+                setTimeout(typ, d);
+            } else {
+                setTimeout(function() {
+                    var sig = document.getElementById('msg-signature');
+                    if (sig) sig.classList.add('visible');
+                }, 600);
+            }
+        }
+        typ();
+    }
+
+    // ============================================
+    // LOOP
+    // ============================================
+
+    function tick() {
+        var t = performance.now() * 0.001;
+        ctx.clearRect(0, 0, W, H);
+
+        for (var i = 0; i < stars.length; i++) {
+            updateStar(stars[i], t);
+            drawStar(stars[i]);
+        }
+
+        tickShootingStars();
+        requestAnimationFrame(tick);
+    }
+
+    // ============================================
+    // ARRANQUE
+    // ============================================
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+})();
